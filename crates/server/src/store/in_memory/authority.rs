@@ -12,9 +12,7 @@ use std::borrow::Borrow;
 #[cfg(all(feature = "dnssec", feature = "testing"))]
 use std::ops::Deref;
 use std::{
-    collections::{BTreeMap, HashSet},
-    ops::DerefMut,
-    sync::Arc,
+    collections::{BTreeMap, HashSet}, ops::DerefMut, sync::Arc
 };
 
 use cfg_if::cfg_if;
@@ -412,6 +410,7 @@ impl InnerInMemory {
         }
     }
 
+    #[inline(never)]
     fn inner_lookup_wildcard(
         &self,
         name: &LowerName,
@@ -471,6 +470,7 @@ impl InnerInMemory {
     /// * query_type - original type in the request query
     /// * next_name - the name from the CNAME, ANAME, MX, etc. record that is being searched
     /// * search_type - the root search type, ANAME, CNAME, MX, i.e. the beginning of the chain
+    #[inline(never)]
     fn additional_search(
         &self,
         original_name: &LowerName,
@@ -495,7 +495,7 @@ impl InnerInMemory {
             // loop and collect any additional records to send
 
             // Track the names we've looked up for this query type.
-            let mut names = HashSet::new();
+            let mut names = HashSet::with_hasher(crate::BuildNoHasher);
 
             // If we're just going to repeat the same query then bail out.
             if query_type == &original_query_type {
@@ -856,6 +856,7 @@ impl InnerInMemory {
 }
 
 /// Gets the next search name, and returns the RecordType that it originated from
+#[inline(never)]
 fn maybe_next_name(
     record_set: &RecordSet,
     query_type: RecordType,

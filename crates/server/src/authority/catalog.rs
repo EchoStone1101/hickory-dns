@@ -31,7 +31,7 @@ use crate::{
 /// Set of authorities, zones, available to this server.
 #[derive(Default)]
 pub struct Catalog {
-    authorities: HashMap<LowerName, Box<dyn AuthorityObject>>,
+    authorities: HashMap<LowerName, Box<dyn AuthorityObject>, crate::BuildNoHasher>,
 }
 
 #[allow(unused_mut, unused_variables)]
@@ -178,7 +178,7 @@ impl Catalog {
     /// Constructs a new Catalog
     pub fn new() -> Self {
         Self {
-            authorities: HashMap::new(),
+            authorities: HashMap::with_hasher(crate::BuildNoHasher),
         }
     }
 
@@ -397,6 +397,7 @@ impl Catalog {
     }
 }
 
+#[inline(never)]
 async fn lookup<'a, R: ResponseHandler + Unpin>(
     request_info: RequestInfo<'_>,
     authority: &dyn AuthorityObject,

@@ -17,7 +17,7 @@ use std::borrow::Borrow;
 use std::cmp::{Ordering, PartialEq};
 use std::fmt::{self, Debug, Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
-use tinyvec::TinyVec;
+// use tinyvec::TinyVec;
 
 use idna;
 use tracing::debug;
@@ -29,7 +29,7 @@ const IDNA_PREFIX: &[u8] = b"xn--";
 
 /// Labels are always stored as ASCII, unicode characters must be encoded with punycode
 #[derive(Clone, Eq)]
-pub struct Label(TinyVec<[u8; 24]>);
+pub struct Label(Vec<u8>);
 
 impl Label {
     /// These must only be ASCII, with unicode encoded to PunyCode, or other such transformation.
@@ -46,7 +46,7 @@ impl Label {
         if bytes.len() > 63 {
             return Err(ProtoErrorKind::LabelBytesTooLong(bytes.len()).into());
         };
-        Ok(Self(TinyVec::from(bytes)))
+        Ok(Self(Vec::from(bytes)))
     }
 
     /// Translates this string into IDNA safe name, encoding to punycode as necessary.
@@ -99,7 +99,7 @@ impl Label {
 
     /// Returns a new Label of the Wildcard, i.e. "*"
     pub fn wildcard() -> Self {
-        Self(TinyVec::from(WILDCARD))
+        Self(Vec::from(WILDCARD))
     }
 
     /// Converts this label to lowercase
@@ -113,7 +113,7 @@ impl Label {
         {
             let mut lower_label: Vec<u8> = self.0.to_vec();
             lower_label[idx..].make_ascii_lowercase();
-            Self(TinyVec::from(lower_label.as_slice()))
+            Self(Vec::from(lower_label.as_slice()))
         } else {
             self.clone()
         }

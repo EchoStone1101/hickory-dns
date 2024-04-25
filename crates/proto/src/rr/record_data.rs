@@ -56,7 +56,7 @@ use super::dnssec::rdata::DNSSECRData;
 /// length (including the length octet).
 /// ```
 #[cfg_attr(feature = "serde-config", derive(Deserialize, Serialize))]
-#[derive(Debug, EnumAsInner, PartialEq, Clone, Eq)]
+#[derive(Debug, EnumAsInner, Clone)]
 #[non_exhaustive]
 pub enum RData {
     /// ```text
@@ -695,6 +695,18 @@ pub enum RData {
     #[deprecated(note = "Use None for the RData in the resource record instead")]
     ZERO,
 }
+
+/* 
+    Iceberg: we are not verifying DNSSEC, and the canonical ordering is only 
+    meaningful there.
+ */
+impl PartialEq for RData {
+    fn eq(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other) 
+    }
+}
+
+impl Eq for RData {}
 
 impl RData {
     fn to_bytes(&self) -> Vec<u8> {
