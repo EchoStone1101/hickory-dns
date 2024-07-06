@@ -32,7 +32,7 @@ codecov = { repository = "hickory-dns/hickory-dns", branch = "main", service = "
 maintenance = { status = "actively-developed" }
 
 [features]
-default = ["sqlite", "resolver", "native-certs", "ascii-art"]
+default = ["resolver", "native-certs", "ascii-art"]
 
 # if enabled, the hickory-dns binary will print ascii-art on start, disable to reduce the binary size
 ascii-art = []

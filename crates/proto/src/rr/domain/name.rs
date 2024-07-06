@@ -19,18 +19,20 @@ use crate::rr::domain::label::{CaseInsensitive, CaseSensitive, IntoLabel, Label,
 use crate::rr::domain::usage::LOCALHOST as LOCALHOST_usage;
 use crate::serialize::binary::*;
 use ipnet::{IpNet, Ipv4Net, Ipv6Net};
+use macro_dump::Walk;
+use dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-use tinyvec::TinyVec;
+// use tinyvec::TinyVec;
 
 /// A domain name
-#[derive(Clone, Default, Eq)]
+#[derive(Clone, Default, Eq, Walk)]
 pub struct Name {
     is_fqdn: bool,
-    label_data: TinyVec<[u8; 32]>,
+    label_data: Vec<u8>,
     // This 24 is chosen because TinyVec accommodates an inline buffer up to 24 bytes without
     // increasing its stack footprint
-    label_ends: TinyVec<[u8; 24]>,
+    label_ends: Vec<u8>,
 }
 
 impl Name {
@@ -869,9 +871,9 @@ impl Name {
         if self.label_ends.is_empty() {
             return Self::root();
         }
-        let mut label_data = TinyVec::new();
+        let mut label_data = Vec::new();
         label_data.push(b'*');
-        let mut label_ends = TinyVec::new();
+        let mut label_ends = Vec::new();
         label_ends.push(1);
 
         // this is not using the Name::extend_name function as it should always be shorter than the original name, so length check is unnecessary

@@ -7,6 +7,9 @@
 
 use std::iter::once;
 
+use dump::Walk;
+use macro_dump::Walk;
+
 use crate::proto::{
     error::*,
     op::{
@@ -18,7 +21,7 @@ use crate::proto::{
 };
 
 /// A Message which captures the data from an inbound request
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Walk)]
 pub struct MessageRequest {
     header: Header,
     query: WireQuery,
@@ -299,7 +302,7 @@ impl Queries {
 }
 
 /// A query with the original bytes stored from the query
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Walk)]
 pub(crate) struct WireQuery {
     query: LowerQuery,
     original: Box<[u8]>,

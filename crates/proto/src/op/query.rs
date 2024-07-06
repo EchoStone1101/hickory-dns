@@ -19,6 +19,9 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use macro_dump::Walk;
+use dump::Walk;
+
 use crate::error::*;
 use crate::rr::dns_class::DNSClass;
 use crate::rr::domain::Name;
@@ -58,7 +61,7 @@ const MDNS_UNICAST_RESPONSE: u16 = 1 << 15;
 ///     +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
 ///
 /// ```
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq, Walk)]
 pub struct Query {
     name: Name,
     query_type: RecordType,

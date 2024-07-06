@@ -113,6 +113,8 @@ name = "hickory_server"
 path = "src/lib.rs"
 
 [dependencies]
+dump = { path = "../dump" }
+macro_dump = { path = "../macro_dump" }
 async-trait.workspace = true
 basic-toml = { workspace = true, optional = true }
 bytes.workspace = true

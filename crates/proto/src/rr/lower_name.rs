@@ -14,6 +14,8 @@ use std::hash::{Hash, Hasher};
 use std::str::FromStr;
 
 use crate::error::*;
+use macro_dump::Walk;
+use dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -22,7 +24,7 @@ use crate::serialize::binary::*;
 
 /// TODO: all LowerNames should be stored in a global "intern" space, and then everything that uses
 ///  them should be through references. As a workaround the Strings are all Rc as well as the array
-#[derive(Default, Debug, Eq, Clone)]
+#[derive(Default, Debug, Eq, Clone, Walk)]
 pub struct LowerName(Name);
 
 impl LowerName {

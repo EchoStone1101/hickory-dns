@@ -12,12 +12,11 @@ use std::borrow::Borrow;
 #[cfg(all(feature = "dnssec", feature = "testing"))]
 use std::ops::Deref;
 use std::{
-    collections::{BTreeMap, HashSet},
-    ops::DerefMut,
-    sync::Arc,
+    collections::{BTreeMap, HashSet}, mem::MaybeUninit, ops::DerefMut, ptr::NonNull, sync::Arc
 };
 
 use cfg_if::cfg_if;
+use dump::{dump, Dump, Walk};
 use futures_util::future::{self, TryFutureExt};
 #[cfg(feature = "dnssec")]
 use time::OffsetDateTime;
@@ -59,6 +58,23 @@ pub struct InMemoryAuthority {
     zone_type: ZoneType,
     allow_axfr: bool,
     inner: RwLock<InnerInMemory>,
+}
+
+impl Walk for InMemoryAuthority {
+    fn walk(&self) {
+        println!("InMemoryAuthority!!");
+
+        self.origin.walk();
+
+        let raw_ptr = &*self as *const InMemoryAuthority as usize as *mut InMemoryAuthority;
+        let s = unsafe {
+            &mut *raw_ptr
+        };
+
+        let inner = s.inner.get_mut();
+        println!("InnerInMemory!!");
+        inner.walk();
+    }
 }
 
 impl InMemoryAuthority {
@@ -412,6 +428,7 @@ impl InnerInMemory {
         }
     }
 
+    #[inline(never)]
     fn inner_lookup_wildcard(
         &self,
         name: &LowerName,
@@ -471,6 +488,7 @@ impl InnerInMemory {
     /// * query_type - original type in the request query
     /// * next_name - the name from the CNAME, ANAME, MX, etc. record that is being searched
     /// * search_type - the root search type, ANAME, CNAME, MX, i.e. the beginning of the chain
+    #[inline(never)]
     fn additional_search(
         &self,
         original_name: &LowerName,
@@ -495,7 +513,7 @@ impl InnerInMemory {
             // loop and collect any additional records to send
 
             // Track the names we've looked up for this query type.
-            let mut names = HashSet::new();
+            let mut names = HashSet::with_hasher(crate::BuildNoHasher);
 
             // If we're just going to repeat the same query then bail out.
             if query_type == &original_query_type {
@@ -856,6 +874,7 @@ impl InnerInMemory {
 }
 
 /// Gets the next search name, and returns the RecordType that it originated from
+#[inline(never)]
 fn maybe_next_name(
     record_set: &RecordSet,
     query_type: RecordType,
@@ -1350,5 +1369,151 @@ impl DnssecAuthority for InMemoryAuthority {
         let mut inner = self.inner.write().await;
 
         inner.secure_zone_mut(self.origin(), self.class)
+    }
+}
+
+impl Walk for InnerInMemory {
+    fn walk(&self) {
+        // println!("{:?}, len={}", self.records, self.records.len());
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const InnerInMemory as *const u8,
+                std::mem::size_of::<InnerInMemory>(),
+            );
+            println!("InnerInMemory {:p} memory layout: {:x?}", self, some_bytes);
+        }
+
+        let tree_ptr: *const Tree = {
+            &self.records as *const BTreeMap<RrKey, Arc<RecordSet>> as *const Tree
+        };
+
+        let tree: &Tree = unsafe {
+            &*tree_ptr
+        };
+
+        tree.walk();
+    }
+}
+
+const B: usize = 6;
+const EDGE: usize = 2 * B;
+const CAPACITY: usize = 2 * B - 1;
+const _MIN_LEN_AFTER_SPLIT: usize = B - 1;
+
+struct Tree {
+    root: Option<NodeRef>,
+    _length: usize,
+}
+
+impl Walk for Tree {
+    fn walk(&self) {
+        if let Some(root) = self.root.as_ref() {
+            root.walk();
+        }
+    }
+}
+
+struct NodeRef {
+    height: usize,
+    node: NonNull<LeafNode>,
+}
+
+type BoxedNode = NonNull<LeafNode>;
+
+#[repr(C)]
+struct InternalNode {
+    data: LeafNode,
+    edges: [MaybeUninit<BoxedNode>; EDGE],
+}
+
+struct LeafNode {
+    _parent: Option<NonNull<InternalNode>>,
+    _parent_idx: MaybeUninit<u16>,
+    len: u16,
+    keys: [MaybeUninit<RrKey>; CAPACITY],
+    vals: [MaybeUninit<Arc<RecordSet>>; CAPACITY],
+}
+
+dump!(InternalNode, NodeRef);
+
+impl Dump for LeafNode {
+    fn dump(&self) {
+        println!("{:p}", self);
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const LeafNode as *const u8,
+                std::mem::size_of::<LeafNode>(),
+            );
+            println!("LeafNode {:p} memory layout: {:x?}", self, some_bytes);
+        }
+    }
+}
+
+impl Walk for NodeRef {
+    fn walk(&self) {
+        // println!("height={}, node={:?}", self.height, self.node);
+
+        if self.height == 0 {
+            let node = unsafe {
+                self.node.as_ref()
+            };
+
+            // println!("Leaf");
+            node.dump();
+            node.walk();
+        } else {
+            let node = unsafe {
+                self.node.cast::<InternalNode>().as_ref()
+            };
+    
+            // println!("Internal");
+            // println!("len &{:p}={}", &node.data.len, node.data.len);
+            node.dump();
+            node.walk(self.height);
+        }
+    }
+}
+
+impl InternalNode {
+    fn walk(&self, height: usize) {
+        let len = self.data.len as usize;
+        // println!("{:p}: Walk edge begin, len={}", self, len);
+        for i in 0..=len {
+            println!("{i}");
+            if height == 1 {
+                let node = unsafe {
+                    self.edges[i].assume_init().as_ref()
+                };
+        
+                node.dump();
+                node.walk();
+            } else {
+                let node = unsafe {
+                    (self.edges[i].assume_init().cast::<InternalNode>()).as_ref()
+                };
+        
+                node.dump();
+                node.walk(height - 1);
+            }
+        }
+        // println!("{:p}: Walk edge end, data begin", self);
+        self.data.walk();
+        // println!("{:p}: Walk data end", self);
+
+    }
+}
+
+impl Walk for LeafNode {
+    fn walk(&self) {
+        // let len = self.len as usize;
+        // println!("len &{:p}={}", self, len);
+
+        for i in 0..self.len as usize {
+            let (k, v) = unsafe {
+                (self.keys[i].assume_init_ref(), self.vals[i].assume_init_ref())
+            };
+            k.walk();
+            v.walk();
+        }
     }
 }

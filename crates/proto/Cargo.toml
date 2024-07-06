@@ -85,6 +85,8 @@ name = "hickory_proto"
 path = "src/lib.rs"
 
 [dependencies]
+dump = { path = "../dump" }
+macro_dump = { path = "../macro_dump" }
 async-recursion.workspace = true
 async-trait.workspace = true
 backtrace = { workspace = true, optional = true }

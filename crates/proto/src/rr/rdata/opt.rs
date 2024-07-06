@@ -12,6 +12,7 @@ use std::fmt;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 
+use dump::{Walk, dump, walk_default};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -168,6 +169,25 @@ use crate::rr::dnssec::SupportedAlgorithms;
 #[derive(Default, Debug, Clone)]
 pub struct OPT {
     options: Vec<(EdnsCode, EdnsOption)>,
+}
+
+impl Walk for OPT {
+    fn walk(&self) {
+        if !self.options.is_empty() {
+            unsafe {
+                let some_bytes: &[u8] = std::slice::from_raw_parts(
+                    &**(&self.options) as *const [(EdnsCode, EdnsOption)] as *const u8,
+                    std::mem::size_of::<(EdnsCode, EdnsOption)>() * self.options.len(),
+                );
+                println!("{:p} memory layout: {:x?}", &**(&self.options), some_bytes);
+            }
+        }
+
+        for (ecode, eopt) in self.options.iter() {
+            ecode.walk();
+            eopt.walk()
+        }
+    }
 }
 
 impl OPT {
@@ -411,6 +431,9 @@ pub enum EdnsCode {
     Unknown(u16),
 }
 
+dump!(EdnsCode);
+walk_default!(EdnsCode);
+
 // TODO: implement a macro to perform these inversions
 impl From<u16> for EdnsCode {
     fn from(value: u16) -> Self {
@@ -485,6 +508,16 @@ pub enum EdnsOption {
 
     /// Unknown, used to deal with unknown or unsupported codes
     Unknown(u16, Vec<u8>),
+}
+
+dump!(EdnsOption);
+impl Walk for EdnsOption {
+    fn walk(&self) {
+        match self {
+            Self::Unknown(_, v) => v.walk(),
+            _ => {}
+        }
+    }
 }
 
 impl EdnsOption {
@@ -612,6 +645,9 @@ pub struct ClientSubnet {
     source_prefix: u8,
     scope_prefix: u8,
 }
+
+dump!(ClientSubnet);
+walk_default!(ClientSubnet);
 
 impl ClientSubnet {
     /// Construct a new EcsOption with the address, source_prefix and scope_prefix.

@@ -7,6 +7,9 @@
 
 use std::fmt::{self, Display};
 
+use macro_dump::Walk;
+use dump::Walk;
+
 use crate::error::*;
 use crate::op::Query;
 use crate::rr::LowerName;
@@ -14,7 +17,7 @@ use crate::rr::{DNSClass, RecordType};
 use crate::serialize::binary::*;
 
 /// Identical to [crate::op::Query], except that the Name is guaranteed to be in lower case form
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Walk)]
 pub struct LowerQuery {
     name: LowerName,
     original: Query,

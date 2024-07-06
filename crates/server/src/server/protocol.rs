@@ -7,6 +7,8 @@
 
 use std::fmt;
 
+use dump::{dump, walk_default};
+
 /// For tracking purposes of inbound requests, which protocol was used
 #[non_exhaustive]
 #[derive(Clone, Copy, Hash, Eq, PartialEq)]
@@ -26,6 +28,9 @@ pub enum Protocol {
     /// HTTP over Quic, DNS over HTTP/3, aka DoH3 (similar to DoH)
     H3,
 }
+
+dump!(Protocol);
+walk_default!(Protocol);
 
 impl fmt::Display for Protocol {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {

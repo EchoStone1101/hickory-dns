@@ -7,6 +7,8 @@
 
 use std::{iter::Chain, slice::Iter, vec};
 
+use macro_dump::Walk;
+use dump::Walk;
 use tracing::{info, warn};
 
 use crate::rr::{DNSClass, Name, RData, Record, RecordType};
@@ -16,7 +18,7 @@ use crate::rr::{DNSClass, Name, RData, Record, RecordType};
 use crate::rr::dnssec::SupportedAlgorithms;
 
 /// Set of resource records associated to a name and type
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Walk)]
 pub struct RecordSet {
     name: Name,
     record_type: RecordType,

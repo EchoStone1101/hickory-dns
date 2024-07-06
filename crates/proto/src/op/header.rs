@@ -9,6 +9,9 @@
 
 use std::{convert::From, fmt};
 
+use dump::{Walk, walk_default};
+use macro_dump::Walk;
+
 use crate::{
     error::*,
     op::{op_code::OpCode, response_code::ResponseCode},
@@ -47,7 +50,7 @@ use crate::{
 ///
 /// ```
 ///
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Hash, Walk)]
 pub struct Header {
     id: u16,
     message_type: MessageType,
@@ -90,6 +93,8 @@ pub enum MessageType {
     /// Response message from the Server or upstream Resolver
     Response,
 }
+
+walk_default!(MessageType);
 
 impl fmt::Display for MessageType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {

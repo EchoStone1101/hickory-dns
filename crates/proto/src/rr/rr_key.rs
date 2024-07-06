@@ -7,10 +7,13 @@
 
 use std::cmp::Ordering;
 
+use macro_dump::Walk;
+use dump::Walk;
+
 use crate::rr::{LowerName, RecordType};
 
 /// Accessor key for RRSets in the Authority.
-#[derive(Eq, PartialEq, Debug, Hash, Clone)]
+#[derive(Eq, PartialEq, Debug, Hash, Clone, Walk)]
 pub struct RrKey {
     /// Matches the name in the Record of this key
     pub name: LowerName,

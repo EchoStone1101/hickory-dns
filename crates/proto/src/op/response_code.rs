@@ -21,6 +21,8 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+use dump::{dump, walk_default};
+
 /// The status code of the response to a query.
 ///
 /// [RFC 1035, DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION, November 1987](https://tools.ietf.org/html/rfc1035)
@@ -129,6 +131,9 @@ pub enum ResponseCode {
     /// An unknown or unregistered response code was received.
     Unknown(u16),
 }
+
+dump!(ResponseCode);
+walk_default!(ResponseCode);
 
 impl ResponseCode {
     /// returns the lower 4 bits of the response code (for the original header portion of the code)

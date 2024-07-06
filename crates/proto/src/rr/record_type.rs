@@ -12,6 +12,7 @@ use std::cmp::Ordering;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
+use dump::{dump, walk_default};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -119,6 +120,9 @@ pub enum RecordType {
     /// This corresponds to a record type of 0, unspecified
     ZERO,
 }
+
+dump!(RecordType);
+walk_default!(RecordType);
 
 impl RecordType {
     /// Returns true if this is an ANY

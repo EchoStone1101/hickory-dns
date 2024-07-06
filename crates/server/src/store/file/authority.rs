@@ -14,6 +14,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use macro_dump::Walk;
+use dump::Walk;
 use tracing::{debug, info};
 
 #[cfg(feature = "dnssec")]
@@ -33,6 +35,7 @@ use crate::{
 ///
 /// Authorities default to DNSClass IN. The ZoneType specifies if this should be treated as the
 /// start of authority for the zone, is a Secondary, or a cached zone.
+#[derive(Walk)]
 pub struct FileAuthority(InMemoryAuthority);
 
 impl FileAuthority {

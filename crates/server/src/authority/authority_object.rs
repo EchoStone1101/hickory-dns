@@ -9,6 +9,7 @@
 
 use std::sync::Arc;
 
+use dump::Walk;
 use tracing::debug;
 
 use crate::{
@@ -19,7 +20,10 @@ use crate::{
 
 /// An Object safe Authority
 #[async_trait::async_trait]
-pub trait AuthorityObject: Send + Sync {
+pub trait AuthorityObject: Send + Sync + Walk {
+    /// Dump function for trait object.
+    fn dump(&self);
+
     /// Clone the object
     fn box_clone(&self) -> Box<dyn AuthorityObject>;
 
@@ -118,9 +122,19 @@ pub trait AuthorityObject: Send + Sync {
 #[async_trait::async_trait]
 impl<A, L> AuthorityObject for Arc<A>
 where
-    A: Authority<Lookup = L> + Send + Sync + 'static,
+    A: Authority<Lookup = L> + Send + Sync + 'static + Walk,
     L: LookupObject + Send + Sync + 'static,
 {
+    fn dump(&self) {
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const Arc<A> as *const u8,
+                std::mem::size_of::<Arc<A>>(),
+            );
+            println!("Arc<A> {:p} memory layout: {:x?}", self, some_bytes);
+        }
+    }
+
     fn box_clone(&self) -> Box<dyn AuthorityObject> {
         Box::new(self.clone())
     }

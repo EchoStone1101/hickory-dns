@@ -9,6 +9,8 @@
 
 use std::net::SocketAddr;
 
+use dump::{dump, Dump, Walk};
+
 use crate::{
     authority::MessageRequest,
     proto::op::{Header, LowerQuery, ResponseCode},
@@ -24,6 +26,13 @@ pub struct Request {
     src: SocketAddr,
     /// Protocol of the request
     protocol: Protocol,
+}
+
+dump!(Request);
+impl Walk for Request {
+    fn walk(&self) {
+        self.message.walk();
+    }
 }
 
 impl Request {
@@ -80,6 +89,22 @@ pub struct RequestInfo<'a> {
     pub header: &'a Header,
     /// The query from the request
     pub query: &'a LowerQuery,
+}
+
+impl<'a> Dump for RequestInfo<'a> {
+    fn dump(&self) {
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const RequestInfo<'_> as *const u8,
+                std::mem::size_of::<RequestInfo<'_>>(),
+            );
+            println!("{:p} memory layout: {:x?}", self, some_bytes);
+        }
+    }
+}
+
+impl<'a> Walk for RequestInfo<'a> {    
+    fn walk(&self) {}
 }
 
 impl<'a> RequestInfo<'a> {

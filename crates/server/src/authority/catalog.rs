@@ -13,6 +13,8 @@ use std::{borrow::Borrow, collections::HashMap, future::Future, io};
 use cfg_if::cfg_if;
 use tracing::{debug, error, info, trace, warn};
 
+use dump::{Dump, Walk};
+
 #[cfg(feature = "dnssec")]
 use crate::proto::rr::{
     dnssec::{Algorithm, SupportedAlgorithms},
@@ -31,7 +33,7 @@ use crate::{
 /// Set of authorities, zones, available to this server.
 #[derive(Default)]
 pub struct Catalog {
-    authorities: HashMap<LowerName, Box<dyn AuthorityObject>>,
+    authorities: HashMap<LowerName, Box<dyn AuthorityObject>, crate::BuildNoHasher>,
 }
 
 #[allow(unused_mut, unused_variables)]
@@ -178,7 +180,7 @@ impl Catalog {
     /// Constructs a new Catalog
     pub fn new() -> Self {
         Self {
-            authorities: HashMap::new(),
+            authorities: HashMap::with_hasher(crate::BuildNoHasher),
         }
     }
 
@@ -349,7 +351,7 @@ impl Catalog {
         let authority = self.find(request_info.query.name());
 
         if let Some(authority) = authority {
-            lookup(
+            lookupuniqueincatelog(
                 request_info,
                 authority,
                 request,
@@ -397,13 +399,35 @@ impl Catalog {
     }
 }
 
-async fn lookup<'a, R: ResponseHandler + Unpin>(
+#[inline(never)]
+async fn lookupuniqueincatelog<'a, R: ResponseHandler + Unpin>(
     request_info: RequestInfo<'_>,
     authority: &dyn AuthorityObject,
     request: &Request,
     response_edns: Option<Edns>,
     response_handle: R,
 ) -> ResponseInfo {
+    dump_dyn(authority);
+    authority.dump();
+    authority.walk();
+
+    println!("\nauthority done\n");
+
+    request_info.dump();
+    request_info.walk();
+
+    println!("\ninfo done\n");
+
+    response_edns.dump();
+    response_edns.walk();
+
+    println!("\nedns done\n");
+
+    request.dump();
+    request.walk();
+
+    println!("\nrequest done\n");
+
     let query = request_info.query;
     debug!(
         "request: {} found authority: {}",
@@ -659,4 +683,20 @@ struct LookupSections {
     ns: Box<dyn LookupObject>,
     soa: Box<dyn LookupObject>,
     additionals: Box<dyn LookupObject>,
+}
+
+fn dump_dyn(authority: &dyn AuthorityObject) {
+    unsafe {
+        let some_bytes: &[u8] = std::slice::from_raw_parts(
+            &authority as *const &dyn AuthorityObject as *const u8,
+            std::mem::size_of::<&dyn AuthorityObject>(),
+        );
+        println!("authority {:p} memory layout: {:x?}", authority, some_bytes);
+
+        // let auth_ptr = u64::from_le_bytes(some_bytes[0..8].try_into().unwrap());
+        // if auth_ptr != 0 {
+        //     // let ptr = auth_ptr as *const u64;
+        //     // println!("{:p}, {}", ptr, *ptr);
+        // }
+    }
 }

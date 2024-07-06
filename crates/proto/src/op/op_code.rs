@@ -9,6 +9,8 @@
 
 use std::{convert::From, fmt};
 
+use dump::walk_default;
+
 use crate::error::*;
 
 /// Operation code for queries, updates, and responses
@@ -43,6 +45,8 @@ pub enum OpCode {
     /// Update message [RFC 2136](https://tools.ietf.org/html/rfc2136)
     Update,
 }
+
+walk_default!(OpCode);
 
 impl fmt::Display for OpCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {

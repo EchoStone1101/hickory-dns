@@ -9,6 +9,8 @@
 
 use std::{cmp::Ordering, convert::TryFrom, fmt};
 
+use dump::Walk;
+use macro_dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -71,7 +73,7 @@ const MDNS_ENABLE_CACHE_FLUSH: u16 = 1 << 15;
 ///
 /// ```
 #[cfg_attr(feature = "serde-config", derive(Deserialize, Serialize))]
-#[derive(Eq, Debug, Clone)]
+#[derive(Eq, Debug, Clone, Walk)]
 // TODO: make Record carry a lifetime for more efficient storage options in the future
 pub struct Record<R: RecordData = RData> {
     name_labels: Name,

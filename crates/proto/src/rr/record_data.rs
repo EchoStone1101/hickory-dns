@@ -12,6 +12,7 @@
 use std::convert::From;
 use std::{cmp::Ordering, fmt, net::IpAddr};
 
+use dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -56,7 +57,7 @@ use super::dnssec::rdata::DNSSECRData;
 /// length (including the length octet).
 /// ```
 #[cfg_attr(feature = "serde-config", derive(Deserialize, Serialize))]
-#[derive(Debug, EnumAsInner, PartialEq, Clone, Eq)]
+#[derive(Debug, EnumAsInner, Clone)]
 #[non_exhaustive]
 pub enum RData {
     /// ```text
@@ -695,6 +696,29 @@ pub enum RData {
     #[deprecated(note = "Use None for the RData in the resource record instead")]
     ZERO,
 }
+
+impl Walk for RData {
+    fn walk(&self) {
+        match self {
+            RData::A(_) | RData::AAAA(_) => {},
+            RData::ANAME(n) => n.walk(),
+            RData::CAA(_) => todo!(),
+            _ => {}
+        }
+    }
+}
+
+/* 
+    Iceberg: we are not verifying DNSSEC, and the canonical ordering is only 
+    meaningful there.
+ */
+impl PartialEq for RData {
+    fn eq(&self, other: &Self) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other) 
+    }
+}
+
+impl Eq for RData {}
 
 impl RData {
     fn to_bytes(&self) -> Vec<u8> {

@@ -10,6 +10,7 @@
 use std::{fmt, ops::BitOr};
 
 use bitflags::bitflags;
+use dump::{dump, walk_default};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -69,6 +70,9 @@ pub enum Proof {
     #[default]
     Indeterminate = 0,
 }
+
+dump!(Proof);
+walk_default!(Proof);
 
 impl Proof {
     /// Returns true if this Proof represents a validated DNSSEC record

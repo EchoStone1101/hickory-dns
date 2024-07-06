@@ -12,6 +12,7 @@ use std::cmp::Ordering;
 use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
+use dump::{dump, walk_default};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -39,6 +40,9 @@ pub enum DNSClass {
     /// Unknown DNSClass was parsed
     Unknown(u16),
 }
+
+dump!(DNSClass);
+walk_default!(DNSClass);
 
 impl FromStr for DNSClass {
     type Err = ProtoError;

@@ -7,6 +7,7 @@
 
 use std::io;
 
+use dump::Walk;
 use hickory_resolver::name_server::TokioConnectionProvider;
 use tracing::{debug, info};
 
@@ -29,6 +30,12 @@ use crate::{
 pub struct ForwardAuthority {
     origin: LowerName,
     resolver: TokioAsyncResolver,
+}
+
+impl Walk for ForwardAuthority {
+    fn walk(&self) {
+        unimplemented!()
+    }
 }
 
 impl ForwardAuthority {

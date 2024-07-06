@@ -63,6 +63,26 @@ pub mod store;
 
 pub use self::server::ServerFuture;
 
+pub(crate) struct NoHasher;
+
+impl std::hash::Hasher for NoHasher {
+    fn write(&mut self, _bytes: &[u8]) {}
+    
+    fn finish(&self) -> u64 {
+        0
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct BuildNoHasher;
+
+impl std::hash::BuildHasher for BuildNoHasher {
+    type Hasher = NoHasher;
+    fn build_hasher(&self) -> NoHasher {
+        NoHasher
+    }
+}
+
 /// Returns the current version of Hickory DNS
 pub fn version() -> &'static str {
     env!("CARGO_PKG_VERSION")
