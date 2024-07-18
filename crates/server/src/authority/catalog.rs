@@ -8,7 +8,7 @@
 // TODO, I've implemented this as a separate entity from the cache, but I wonder if the cache
 //  should be the only "front-end" for lookups, where if that misses, then we go to the catalog
 //  then, if requested, do a recursive lookup... i.e. the catalog would only point to files.
-use std::{borrow::Borrow, collections::HashMap, future::Future, io};
+use std::{borrow::Borrow, collections::HashMap, future::Future, io, io::Write};
 
 use cfg_if::cfg_if;
 use tracing::{debug, error, info, trace, warn};
@@ -351,7 +351,7 @@ impl Catalog {
         let authority = self.find(request_info.query.name());
 
         if let Some(authority) = authority {
-            lookupuniqueincatelog(
+            lookup(
                 request_info,
                 authority,
                 request,
@@ -400,33 +400,44 @@ impl Catalog {
 }
 
 #[inline(never)]
-async fn lookupuniqueincatelog<'a, R: ResponseHandler + Unpin>(
+async fn lookup<'a, R: ResponseHandler + Unpin>(
     request_info: RequestInfo<'_>,
     authority: &dyn AuthorityObject,
     request: &Request,
     response_edns: Option<Edns>,
     response_handle: R,
 ) -> ResponseInfo {
-    dump_dyn(authority);
-    authority.dump();
-    authority.walk();
+    let mut f = Vec::new();
+    _ = write!(f, "{{");
 
-    println!("\nauthority done\n");
+    _ = write!(f, "\"%request_info\": {{ \"data\": [\"{:p}\", \"{:p}\"], \"base\": \"{:p}\" }}, ", request_info.header, request_info.query, request);
 
-    request_info.dump();
-    request_info.walk();
+    // dump_dyn(authority, &mut f);
+    authority.dump(&mut f);
+    authority.walk(&mut f);
 
-    println!("\ninfo done\n");
+    request.dump(&mut f);
+    request.walk(&mut f);
 
-    response_edns.dump();
-    response_edns.walk();
+    response_handle.dump(&mut f);
+    response_handle.walk(&mut f);
 
-    println!("\nedns done\n");
+    request_info.dump(&mut f);
+    request_info.walk(&mut f);
 
-    request.dump();
-    request.walk();
+    response_edns.as_ref().map(|e| e.dump(&mut f));
+    response_edns.walk(&mut f);
 
-    println!("\nrequest done\n");
+    while let Some(ch) = f.pop() {
+        if ch == b',' {
+            _ = write!(f, "}}");
+            break;
+        }
+    }
+
+    let json = std::str::from_utf8(&f).unwrap().to_string();
+    let mut outfile = std::fs::File::create("dump.json").unwrap();
+    outfile.write_all(json.as_bytes()).unwrap();
 
     let query = request_info.query;
     debug!(
@@ -685,18 +696,20 @@ struct LookupSections {
     additionals: Box<dyn LookupObject>,
 }
 
-fn dump_dyn(authority: &dyn AuthorityObject) {
-    unsafe {
-        let some_bytes: &[u8] = std::slice::from_raw_parts(
-            &authority as *const &dyn AuthorityObject as *const u8,
-            std::mem::size_of::<&dyn AuthorityObject>(),
-        );
-        println!("authority {:p} memory layout: {:x?}", authority, some_bytes);
-
-        // let auth_ptr = u64::from_le_bytes(some_bytes[0..8].try_into().unwrap());
-        // if auth_ptr != 0 {
-        //     // let ptr = auth_ptr as *const u64;
-        //     // println!("{:p}, {}", ptr, *ptr);
-        // }
-    }
-}
+// fn dump_dyn(authority: &dyn AuthorityObject, f: &mut Vec<u8>) {
+//     // let size = std::mem::size_of::<&dyn AuthorityObject>();
+//     let size = 8;
+//     unsafe {
+//         let some_bytes: &[u8] = std::slice::from_raw_parts(
+//             &authority as *const &dyn AuthorityObject as *const u8,
+//             size,
+//         );
+//         _ = write!(f, "\"%dyn_authority\": {{ \"data\": {:?}, \"__size__\": 8, \"__type__\": \"ptr\" }}, ", some_bytes);
+// 
+//         // let auth_ptr = u64::from_le_bytes(some_bytes[0..8].try_into().unwrap());
+//         // if auth_ptr != 0 {
+//         //     // let ptr = auth_ptr as *const u64;
+//         //     // println!("\"{:p}\", {}", ptr, *ptr);
+//         // }
+//     }
+// }

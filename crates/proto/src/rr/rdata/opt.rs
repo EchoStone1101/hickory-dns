@@ -9,10 +9,11 @@
 #![allow(clippy::use_self)]
 
 use std::fmt;
+use std::io::Write;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr};
 use std::str::FromStr;
 
-use dump::{Walk, dump, walk_default};
+use dump::{Walk, walk_default};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -172,20 +173,21 @@ pub struct OPT {
 }
 
 impl Walk for OPT {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         if !self.options.is_empty() {
+            let size = std::mem::size_of::<(EdnsCode, EdnsOption)>();
             unsafe {
                 let some_bytes: &[u8] = std::slice::from_raw_parts(
                     &**(&self.options) as *const [(EdnsCode, EdnsOption)] as *const u8,
-                    std::mem::size_of::<(EdnsCode, EdnsOption)>() * self.options.len(),
+                    size * self.options.len(),
                 );
-                println!("{:p} memory layout: {:x?}", &**(&self.options), some_bytes);
+                _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__length__\": {}, \"__type__\": \"%\\\"core::mem::maybe_uninit::MaybeUninit<(hickory_proto::rr::rdata::opt::EdnsCode, hickory_proto::rr::rdata::opt::EdnsOption)>\\\"\" }}, ", &**(&self.options), some_bytes, size, self.options.len());
             }
         }
 
         for (ecode, eopt) in self.options.iter() {
-            ecode.walk();
-            eopt.walk()
+            ecode.walk(f);
+            eopt.walk(f);
         }
     }
 }
@@ -430,8 +432,6 @@ pub enum EdnsCode {
     /// Unknown, used to deal with unknown or unsupported codes
     Unknown(u16),
 }
-
-dump!(EdnsCode);
 walk_default!(EdnsCode);
 
 // TODO: implement a macro to perform these inversions
@@ -510,11 +510,13 @@ pub enum EdnsOption {
     Unknown(u16, Vec<u8>),
 }
 
-dump!(EdnsOption);
 impl Walk for EdnsOption {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         match self {
-            Self::Unknown(_, v) => v.walk(),
+            Self::Unknown(_, v) => {
+                println!("Unknown EdnsOption");
+                v.walk(f)
+            },
             _ => {}
         }
     }
@@ -645,8 +647,6 @@ pub struct ClientSubnet {
     source_prefix: u8,
     scope_prefix: u8,
 }
-
-dump!(ClientSubnet);
 walk_default!(ClientSubnet);
 
 impl ClientSubnet {

@@ -16,7 +16,7 @@ use std::{
 };
 
 use cfg_if::cfg_if;
-use dump::{dump, Dump, Walk};
+use dump::{dump_with_type, Dump, Walk};
 use futures_util::future::{self, TryFutureExt};
 #[cfg(feature = "dnssec")]
 use time::OffsetDateTime;
@@ -61,10 +61,11 @@ pub struct InMemoryAuthority {
 }
 
 impl Walk for InMemoryAuthority {
-    fn walk(&self) {
-        println!("InMemoryAuthority!!");
+    fn walk(&self, f: &mut Vec<u8>) {
+        self.origin.walk(f);
 
-        self.origin.walk();
+        // let ofs = &self.inner as *const _ as usize - self as *const _  as usize;
+        // println!("InMemoryAuthority=&{:p}, inner=&{:p}, ofs={}", self, &self.inner, ofs);
 
         let raw_ptr = &*self as *const InMemoryAuthority as usize as *mut InMemoryAuthority;
         let s = unsafe {
@@ -72,8 +73,8 @@ impl Walk for InMemoryAuthority {
         };
 
         let inner = s.inner.get_mut();
-        println!("InnerInMemory!!");
-        inner.walk();
+        // inner.dump(f);
+        inner.walk(f);
     }
 }
 
@@ -336,6 +337,7 @@ struct InnerInMemory {
     #[cfg(feature = "dnssec")]
     secure_keys: Vec<SigSigner>,
 }
+// dump_with_type!(InnerInMemory, "InnerInMemory");
 
 impl InnerInMemory {
     /// Retrieve the Signer, which contains the private keys, for this zone
@@ -1373,16 +1375,7 @@ impl DnssecAuthority for InMemoryAuthority {
 }
 
 impl Walk for InnerInMemory {
-    fn walk(&self) {
-        // println!("{:?}, len={}", self.records, self.records.len());
-        unsafe {
-            let some_bytes: &[u8] = std::slice::from_raw_parts(
-                self as *const InnerInMemory as *const u8,
-                std::mem::size_of::<InnerInMemory>(),
-            );
-            println!("InnerInMemory {:p} memory layout: {:x?}", self, some_bytes);
-        }
-
+    fn walk(&self, f: &mut Vec<u8>) {
         let tree_ptr: *const Tree = {
             &self.records as *const BTreeMap<RrKey, Arc<RecordSet>> as *const Tree
         };
@@ -1391,7 +1384,7 @@ impl Walk for InnerInMemory {
             &*tree_ptr
         };
 
-        tree.walk();
+        tree.walk(f);
     }
 }
 
@@ -1406,9 +1399,9 @@ struct Tree {
 }
 
 impl Walk for Tree {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         if let Some(root) = self.root.as_ref() {
-            root.walk();
+            root.walk(f);
         }
     }
 }
@@ -1434,50 +1427,39 @@ struct LeafNode {
     vals: [MaybeUninit<Arc<RecordSet>>; CAPACITY],
 }
 
-dump!(InternalNode, NodeRef);
-
-impl Dump for LeafNode {
-    fn dump(&self) {
-        println!("{:p}", self);
-        unsafe {
-            let some_bytes: &[u8] = std::slice::from_raw_parts(
-                self as *const LeafNode as *const u8,
-                std::mem::size_of::<LeafNode>(),
-            );
-            println!("LeafNode {:p} memory layout: {:x?}", self, some_bytes);
-        }
-    }
-}
+dump_with_type!(InternalNode, "%\\\"alloc::collections::btree::node::InternalNode<hickory_proto::rr::rr_key::RrKey, alloc::sync::Arc<hickory_proto::rr::rr_set::RecordSet>>\\\"");
+dump_with_type!(NodeRef, "NodeRef");
+dump_with_type!(LeafNode, "%\\\"alloc::collections::btree::node::LeafNode<hickory_proto::rr::rr_key::RrKey, alloc::sync::Arc<hickory_proto::rr::rr_set::RecordSet>>\\\"");
 
 impl Walk for NodeRef {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         // println!("height={}, node={:?}", self.height, self.node);
 
-        if self.height == 0 {
+        if self.height == 0 { // Leaf
             let node = unsafe {
                 self.node.as_ref()
             };
 
             // println!("Leaf");
-            node.dump();
-            node.walk();
+            node.dump(f);
+            node.walk(f);
         } else {
             let node = unsafe {
                 self.node.cast::<InternalNode>().as_ref()
             };
     
             // println!("Internal");
-            // println!("len &{:p}={}", &node.data.len, node.data.len);
-            node.dump();
-            node.walk(self.height);
+            // println!("len &\"{:p}\"={}", &node.data.len, node.data.len);
+            node.dump(f);
+            node.walk(f, self.height);
         }
     }
 }
 
 impl InternalNode {
-    fn walk(&self, height: usize) {
+    fn walk(&self, f: &mut Vec<u8>, height: usize) {
         let len = self.data.len as usize;
-        // println!("{:p}: Walk edge begin, len={}", self, len);
+        // println!("\"{:p}\": Walk edge begin, len={}", self, len);
         for i in 0..=len {
             println!("{i}");
             if height == 1 {
@@ -1485,35 +1467,35 @@ impl InternalNode {
                     self.edges[i].assume_init().as_ref()
                 };
         
-                node.dump();
-                node.walk();
+                node.dump(f);
+                node.walk(f);
             } else {
                 let node = unsafe {
                     (self.edges[i].assume_init().cast::<InternalNode>()).as_ref()
                 };
         
-                node.dump();
-                node.walk(height - 1);
+                node.dump(f);
+                node.walk(f, height - 1);
             }
         }
-        // println!("{:p}: Walk edge end, data begin", self);
-        self.data.walk();
-        // println!("{:p}: Walk data end", self);
+        // println!("\"{:p}\": Walk edge end, data begin", self);
+        self.data.walk(f);
+        // println!("\"{:p}\": Walk data end", self);
 
     }
 }
 
 impl Walk for LeafNode {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         // let len = self.len as usize;
-        // println!("len &{:p}={}", self, len);
+        // println!("len &\"{:p}\"={}", self, len);
 
         for i in 0..self.len as usize {
             let (k, v) = unsafe {
                 (self.keys[i].assume_init_ref(), self.vals[i].assume_init_ref())
             };
-            k.walk();
-            v.walk();
+            k.walk(f);
+            v.walk(f);
         }
     }
 }

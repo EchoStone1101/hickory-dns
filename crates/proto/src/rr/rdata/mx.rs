@@ -9,6 +9,8 @@
 
 use std::fmt;
 
+use macro_dump::Walk;
+use dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -36,7 +38,7 @@ use crate::{
 ///
 /// ```
 #[cfg_attr(feature = "serde-config", derive(Deserialize, Serialize))]
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Walk)]
 pub struct MX {
     preference: u16,
     exchange: Name,

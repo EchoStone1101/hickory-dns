@@ -14,6 +14,8 @@ use std::{
 use futures_util::{FutureExt, StreamExt};
 use hickory_proto::{op::MessageType, rr::Record};
 use ipnet::IpNet;
+use macro_dump::Walk;
+use dump::Walk;
 #[cfg(feature = "dns-over-rustls")]
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use tokio::{net, task::JoinSet};
@@ -1003,7 +1005,7 @@ pub(crate) async fn handle_raw_request<T: RequestHandler>(
     .await;
 }
 
-#[derive(Clone)]
+#[derive(Clone, Walk)]
 struct ReportingResponseHandler<R: ResponseHandler> {
     request_header: Header,
     query: LowerQuery,
@@ -1015,6 +1017,22 @@ struct ReportingResponseHandler<R: ResponseHandler> {
 #[async_trait::async_trait]
 #[allow(clippy::uninlined_format_args)]
 impl<R: ResponseHandler> ResponseHandler for ReportingResponseHandler<R> {
+    fn dump(&self, f: &mut Vec<u8>) {
+        use std::io::Write;
+        let size = std::mem::size_of::<ReportingResponseHandler<R>>();
+        let ty = match size {
+            272 => "%\\\"hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>\\\"",
+            _ => "Unknown ReportingResponseHandler",
+        };
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const ReportingResponseHandler<R> as *const u8,
+                size,
+            );
+            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"{}\" }}, ", self, some_bytes, size, ty);
+        }
+    }
+
     async fn send_response<'a>(
         &mut self,
         response: crate::authority::MessageResponse<

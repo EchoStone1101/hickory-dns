@@ -33,7 +33,7 @@ pub struct ForwardAuthority {
 }
 
 impl Walk for ForwardAuthority {
-    fn walk(&self) {
+    fn walk(&self, _f: &mut Vec<u8>) {
         unimplemented!()
     }
 }

@@ -7,9 +7,10 @@
 
 //! Request Handler for incoming requests
 
+use std::io::Write;
 use std::net::SocketAddr;
 
-use dump::{dump, Dump, Walk};
+use dump::{dump_with_type, Dump, Walk};
 
 use crate::{
     authority::MessageRequest,
@@ -28,10 +29,11 @@ pub struct Request {
     protocol: Protocol,
 }
 
-dump!(Request);
+dump_with_type!(Request, "%\\\"hickory_server::server::request_handler::Request\\\"");
+
 impl Walk for Request {
-    fn walk(&self) {
-        self.message.walk();
+    fn walk(&self, f: &mut Vec<u8>) {
+        self.message.walk(f);
     }
 }
 
@@ -92,19 +94,20 @@ pub struct RequestInfo<'a> {
 }
 
 impl<'a> Dump for RequestInfo<'a> {
-    fn dump(&self) {
+    fn dump(&self, f: &mut Vec<u8>) {
+        let size = std::mem::size_of::<RequestInfo<'_>>();
         unsafe {
             let some_bytes: &[u8] = std::slice::from_raw_parts(
                 self as *const RequestInfo<'_> as *const u8,
-                std::mem::size_of::<RequestInfo<'_>>(),
+                size,
             );
-            println!("{:p} memory layout: {:x?}", self, some_bytes);
+            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"%\\\"hickory_server::server::request_handler::RequestInfo<'_>\\\"\" }}, ", self, some_bytes, size);
         }
     }
 }
 
 impl<'a> Walk for RequestInfo<'a> {    
-    fn walk(&self) {}
+    fn walk(&self, _f: &mut Vec<u8>) {}
 }
 
 impl<'a> RequestInfo<'a> {

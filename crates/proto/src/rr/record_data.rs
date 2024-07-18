@@ -698,12 +698,16 @@ pub enum RData {
 }
 
 impl Walk for RData {
-    fn walk(&self) {
+    fn walk(&self, f: &mut Vec<u8>) {
         match self {
             RData::A(_) | RData::AAAA(_) => {},
-            RData::ANAME(n) => n.walk(),
-            RData::CAA(_) => todo!(),
-            _ => {}
+            RData::ANAME(n) => n.walk(f),
+            RData::CNAME(n) => n.walk(f),
+            RData::NS(n) => n.walk(f),
+            RData::MX(mx) => mx.walk(f),
+            RData::SOA(soa) => soa.walk(f),
+            RData::SRV(srv) => srv.walk(f),
+            _ => println!("RData not implement {:?}", self),
         }
     }
 }

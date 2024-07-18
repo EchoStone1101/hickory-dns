@@ -21,7 +21,7 @@ use crate::{
     serialize::binary::{BinEncodable, BinEncoder},
 };
 
-use dump::{Walk, dump};
+use dump::{dump_with_type, Walk};
 use macro_dump::Walk;
 
 /// Edns implements the higher level concepts for working with extended dns as it is used to create or be
@@ -41,7 +41,7 @@ pub struct Edns {
     options: OPT,
 }
 
-dump!(Edns);
+dump_with_type!(Edns, "%\\\"core::option::Option<hickory_proto::op::edns::Edns>\\\"");
 
 impl Default for Edns {
     fn default() -> Self {

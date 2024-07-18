@@ -7,6 +7,7 @@
 
 use std::{io, net::SocketAddr};
 
+use dump::{walk_default, Walk};
 use hickory_proto::rr::Record;
 use tracing::{debug, trace};
 
@@ -21,7 +22,10 @@ use crate::{
 
 /// A handler for send a response to a client
 #[async_trait::async_trait]
-pub trait ResponseHandler: Clone + Send + Sync + Unpin + 'static {
+pub trait ResponseHandler: Clone + Send + Sync + Walk + Unpin + 'static {
+    /// Dump function for trait object.
+    fn dump(&self, f: &mut Vec<u8>);
+
     // TODO: add associated error type
     //type Error;
 
@@ -49,6 +53,7 @@ pub struct ResponseHandle {
     stream_handle: BufDnsStreamHandle,
     protocol: Protocol,
 }
+walk_default!(ResponseHandle);
 
 impl ResponseHandle {
     /// Returns a new `ResponseHandle` for sending a response message
@@ -89,6 +94,18 @@ impl ResponseHandle {
 
 #[async_trait::async_trait]
 impl ResponseHandler for ResponseHandle {
+    fn dump(&self, f: &mut Vec<u8>) {
+        use std::io::Write;
+        let size = std::mem::size_of::<ResponseHandle>();
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const ResponseHandle as *const u8,
+                size,
+            );
+            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"ResponseHandle\" }}, ", self, some_bytes, size);
+        }
+    }
+
     /// Serializes and sends a message to to the wrapped handle
     ///
     /// self is consumed as only one message should ever be sent in response to a Request

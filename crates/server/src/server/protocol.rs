@@ -7,7 +7,7 @@
 
 use std::fmt;
 
-use dump::{dump, walk_default};
+use dump::walk_default;
 
 /// For tracking purposes of inbound requests, which protocol was used
 #[non_exhaustive]
@@ -29,7 +29,6 @@ pub enum Protocol {
     H3,
 }
 
-dump!(Protocol);
 walk_default!(Protocol);
 
 impl fmt::Display for Protocol {

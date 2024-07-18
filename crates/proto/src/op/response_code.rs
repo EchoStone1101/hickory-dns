@@ -21,7 +21,7 @@
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
-use dump::{dump, walk_default};
+use dump::walk_default;
 
 /// The status code of the response to a query.
 ///
@@ -131,8 +131,6 @@ pub enum ResponseCode {
     /// An unknown or unregistered response code was received.
     Unknown(u16),
 }
-
-dump!(ResponseCode);
 walk_default!(ResponseCode);
 
 impl ResponseCode {

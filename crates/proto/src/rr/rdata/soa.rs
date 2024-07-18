@@ -9,6 +9,8 @@
 
 use std::fmt;
 
+use macro_dump::Walk;
+use dump::Walk;
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -63,7 +65,7 @@ use crate::{
 /// change the SOA RR with known semantics.
 /// ```
 #[cfg_attr(feature = "serde-config", derive(Deserialize, Serialize))]
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Walk)]
 pub struct SOA {
     mname: Name,
     rname: Name,
