@@ -495,11 +495,13 @@ impl InnerInMemory {
             // loop and collect any additional records to send
 
             // Track the names we've looked up for this query type.
-            let mut names = HashSet::with_hasher(crate::BuildNoHasher);
+            // let mut names = HashSet::with_hasher(crate::BuildNoHasher);
+            let mut names = Vec::new();
 
             // If we're just going to repeat the same query then bail out.
             if query_type == &original_query_type {
-                names.insert(original_name.clone());
+                // names.insert(original_name.clone());
+                names.push(original_name.clone());
             }
 
             let mut next_name = Some(next_name.clone());
@@ -510,7 +512,8 @@ impl InnerInMemory {
                 }
 
                 let additional = self.inner_lookup(&search, *query_type, lookup_options);
-                names.insert(search);
+                // names.insert(search);
+                names.push(original_name.clone());
 
                 if let Some(additional) = additional {
                     // assuming no crazy long chains...
