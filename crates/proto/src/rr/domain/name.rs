@@ -865,6 +865,7 @@ impl Name {
     /// let name = Name::root().into_wildcard();
     /// assert_eq!(name, Name::root());
     /// ```
+    #[inline(never)]
     pub fn into_wildcard(self) -> Self {
         if self.label_ends.is_empty() {
             return Self::root();

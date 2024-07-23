@@ -147,6 +147,7 @@ impl Label {
     }
 
     /// compares with the other label, ignoring case
+    #[inline(never)]
     pub fn cmp_with_f<F: LabelCmp>(&self, other: &Self) -> Ordering {
         let s = self.0.iter();
         let o = other.0.iter();

@@ -1013,7 +1013,16 @@ impl Authority for InMemoryAuthority {
         query_type: RecordType,
         lookup_options: LookupOptions,
     ) -> Result<Self::Lookup, LookupError> {
-        let inner = self.inner.read().await;
+        // We should avoid read().await
+        // let inner = self.inner.read().await;
+
+        let inner = unsafe {
+            let raw_ptr = &*self as *const InMemoryAuthority as usize as *mut InMemoryAuthority;
+            let s = &mut *raw_ptr;
+    
+            let inner = s.inner.get_mut();
+            &*inner
+        };
 
         // Collect the records from each rr_set
         let (result, additionals): (LookupResult<LookupRecords>, Option<LookupRecords>) =
