@@ -21,24 +21,6 @@ use crate::{
 /// An Object safe Authority
 #[async_trait::async_trait]
 pub trait AuthorityObject: Send + Sync + Walk {
-    /* Vtable of FileAuthority
-    @vtable.h = private unnamed_addr constant <{ ptr, [16 x i8], ptr, ptr, ptr, ptr, ptr, ptr, ptr, ptr, ptr, ptr, ptr, ptr }> 
-    0: <{ ptr @"_ZN4core3ptr98drop_in_place$LT$alloc..sync..Arc$LT$hickory_server..store..file..authority..FileAuthority$GT$$GT$17hddfaab638e079395E", 
-    1,2:[16 x i8] c"\08\00\00\00\00\00\00\00\08\00\00\00\00\00\00\00", 
-    3:ptr @alloc_2e1af0b5b30dc9c02b22fc21e263cc1e, 
-    4:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$9box_clone17h155272cdf0029148E", 
-    5:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$9zone_type17h48a0ff3b79382badE", 
-    6:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$15is_axfr_allowed17h20c6fbc91e006d3cE", 
-    7:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$6update17h38a73f6c3822cd66E", 
-    8:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$6origin17h81d4f9358ad5de8cE", 
-    9:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$6lookup17h189f6015565959beE", 
-    10:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$6search17h83dbee6999bfc45aE", 
-    11:ptr @_ZN14hickory_server9authority16authority_object15AuthorityObject2ns17h25231631e0e4d049E, 
-    12:ptr @"_ZN106_$LT$alloc..sync..Arc$LT$A$GT$$u20$as$u20$hickory_server..authority..authority_object..AuthorityObject$GT$16get_nsec_records17h578e759b0658dafcE", 
-    13:ptr @_ZN14hickory_server9authority16authority_object15AuthorityObject3soa17hf7f8be329c7893e2E, 
-    14:ptr @_ZN14hickory_server9authority16authority_object15AuthorityObject10soa_secure17h7f3bbcf126065f23E }>, align 8
-    */
-
     /// Dump function for trait object.
     fn dump(&self, f: &mut Vec<u8>);
 

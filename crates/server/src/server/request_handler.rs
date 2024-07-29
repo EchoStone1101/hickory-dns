@@ -29,7 +29,7 @@ pub struct Request {
     protocol: Protocol,
 }
 
-dump_with_type!(Request, "%\\\"hickory_server::server::request_handler::Request\\\"");
+dump_with_type!(Request, "Request");
 
 impl Walk for Request {
     fn walk(&self, f: &mut Vec<u8>) {
@@ -101,7 +101,7 @@ impl<'a> Dump for RequestInfo<'a> {
                 self as *const RequestInfo<'_> as *const u8,
                 size,
             );
-            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"%\\\"hickory_server::server::request_handler::RequestInfo<'_>\\\"\" }}, ", self, some_bytes, size);
+            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"RequestInfo\" }}, ", self, some_bytes, size);
         }
     }
 }

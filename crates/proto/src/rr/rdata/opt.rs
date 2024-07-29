@@ -181,7 +181,7 @@ impl Walk for OPT {
                     &**(&self.options) as *const [(EdnsCode, EdnsOption)] as *const u8,
                     size * self.options.len(),
                 );
-                _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__length__\": {}, \"__type__\": \"%\\\"core::mem::maybe_uninit::MaybeUninit<(hickory_proto::rr::rdata::opt::EdnsCode, hickory_proto::rr::rdata::opt::EdnsOption)>\\\"\" }}, ", &**(&self.options), some_bytes, size, self.options.len());
+                _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__length__\": {}, \"__type__\": \"%\\\"core::mem::maybe_uninit::MaybeUninit<(rr::rdata::opt::EdnsCode, rr::rdata::opt::EdnsOption)>\\\"\" }}, ", &**(&self.options), some_bytes, size, self.options.len());
             }
         }
 

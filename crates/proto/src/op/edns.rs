@@ -41,7 +41,7 @@ pub struct Edns {
     options: OPT,
 }
 
-dump_with_type!(Edns, "%\\\"core::option::Option<hickory_proto::op::edns::Edns>\\\"");
+dump_with_type!(Edns, "%\\\"hickory_proto::op::edns::Edns\\\"");
 
 impl Default for Edns {
     fn default() -> Self {

@@ -1029,7 +1029,7 @@ impl Authority for InMemoryAuthority {
         name: &LowerName,
         query_type: RecordType,
         lookup_options: LookupOptions,
-    ) -> Result<Self::Lookup, LookupError> {
+    ) -> Result<Self::Lookup, LookupError> {        
         let inner = self.inner.read().await;
 
         // Collect the records from each rr_set
@@ -1427,9 +1427,9 @@ struct LeafNode {
     vals: [MaybeUninit<Arc<RecordSet>>; CAPACITY],
 }
 
-dump_with_type!(InternalNode, "%\\\"alloc::collections::btree::node::InternalNode<hickory_proto::rr::rr_key::RrKey, alloc::sync::Arc<hickory_proto::rr::rr_set::RecordSet>>\\\"");
+dump_with_type!(InternalNode, "InternalNode");
 dump_with_type!(NodeRef, "NodeRef");
-dump_with_type!(LeafNode, "%\\\"alloc::collections::btree::node::LeafNode<hickory_proto::rr::rr_key::RrKey, alloc::sync::Arc<hickory_proto::rr::rr_set::RecordSet>>\\\"");
+dump_with_type!(LeafNode, "LeafNode");
 
 impl Walk for NodeRef {
     fn walk(&self, f: &mut Vec<u8>) {
