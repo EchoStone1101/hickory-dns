@@ -16,7 +16,7 @@ mod auth_lookup;
 #[allow(clippy::module_inception)]
 mod authority;
 pub(crate) mod authority_object;
-mod catalog;
+pub mod catalog;
 mod error;
 pub(crate) mod message_request;
 mod message_response;

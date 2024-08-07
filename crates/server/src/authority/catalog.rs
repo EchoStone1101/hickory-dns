@@ -412,6 +412,47 @@ async fn lookup<'a, R: ResponseHandler + Unpin>(
         authority.origin()
     );
 
+    let __header = __build_response(
+        authority,
+        request_info.clone(),
+        1,
+        request.header(),
+        query,
+        request.edns(),
+    )
+    .await;
+    println!("{:?}", __header);
+    let __header = __build_response(
+        authority,
+        request_info.clone(),
+        5,
+        request.header(),
+        query,
+        request.edns(),
+    )
+    .await;
+    println!("{:?}", __header);
+    let __header = __build_response(
+        authority,
+        request_info.clone(),
+        2,
+        request.header(),
+        query,
+        request.edns(),
+    )
+    .await;
+    println!("{:?}", __header);
+    let __header = __build_response(
+        authority,
+        request_info.clone(),
+        1,
+        request.header(),
+        query,
+        request.edns(),
+    )
+    .await;
+    println!("{:?}", __header);
+
     let (response_header, sections) = build_response(
         authority,
         request_info,
@@ -465,6 +506,22 @@ fn lookup_options_for_edns(edns: Option<&Edns>) -> LookupOptions {
     }
 }
 
+/// Export for not inline
+#[allow(unused)]
+#[inline(never)]
+pub async fn __build_response(
+    authority: &dyn AuthorityObject,
+    request_info: RequestInfo<'_>,
+    request_id: u16,
+    request_header: &Header,
+    query: &LowerQuery,
+    edns: Option<&Edns>,
+) -> Header {
+    let (header, _) = build_response(authority, request_info, request_id, request_header, query, edns).await;
+    header
+}
+
+#[inline(never)]
 async fn build_response(
     authority: &dyn AuthorityObject,
     request_info: RequestInfo<'_>,
@@ -510,6 +567,7 @@ async fn build_response(
     (response_header, sections)
 }
 
+#[inline(never)]
 async fn send_authoritative_response(
     future: impl Future<Output = Result<Box<dyn LookupObject>, LookupError>>,
     authority: &dyn AuthorityObject,

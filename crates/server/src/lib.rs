@@ -61,6 +61,7 @@ pub mod error;
 pub mod server;
 pub mod store;
 
+pub use authority::catalog::__build_response;
 pub use self::server::ServerFuture;
 
 pub(crate) struct NoHasher;
