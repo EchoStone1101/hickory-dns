@@ -120,6 +120,7 @@ impl Record<RData> {
     /// * `ttl` - time-to-live is the amount of time this record should be cached before refreshing
     // TODO: maybe deprecate in the future, there are valid use cases for null data...
     // #[deprecated = "consider using the typed variant `from_rdata`"]
+    #[inline(never)]
     pub fn with(name: Name, rr_type: RecordType, ttl: u32) -> Self {
         Self {
             name_labels: name,
@@ -313,6 +314,13 @@ impl<R: RecordData> Record<R> {
         );
 
         self.rdata = rdata;
+        self
+    }
+
+    /// Set data
+    #[inline(never)]
+    pub fn set_data_ref(&mut self, rdata: Option<&R>) -> &mut Self {
+        self.rdata = rdata.cloned();
         self
     }
 

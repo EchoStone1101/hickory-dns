@@ -41,7 +41,7 @@ use crate::{
         op::ResponseCode,
         rr::{
             rdata::SOA,
-            {DNSClass, LowerName, Name, RData, Record, RecordSet, RecordType, RrKey},
+            {DNSClass, LowerName, Name, RData, Record, RecordSet, RecordType, RrKey, RrsetRecords},
         },
     },
     server::RequestInfo,
@@ -447,11 +447,12 @@ impl InnerInMemory {
                     }
                 };
 
-                for record in records {
-                    if let Some(rdata) = record.data() {
-                        new_answer.add_rdata(rdata.clone());
-                    }
-                }
+                // for record in records {
+                //     if let Some(rdata) = record.data() {
+                //         new_answer.add_rdata(rdata.clone());
+                //     }
+                // }
+                Self::add_rdata(&mut new_answer, records);
 
                 #[cfg(feature = "dnssec")]
                 for rrsig in _rrsigs {
@@ -460,6 +461,15 @@ impl InnerInMemory {
 
                 Arc::new(new_answer)
             })
+    }
+
+    #[inline(never)]
+    fn add_rdata(new_answer: &mut RecordSet, records: RrsetRecords) {
+        for record in records {
+            if let Some(rdata) = record.data() {
+                new_answer.add_rdata_ref(rdata);
+            }
+        }
     }
 
     /// Search for additional records to include in the response
@@ -1104,8 +1114,10 @@ impl Authority for InMemoryAuthority {
                                 let ttl = answer.ttl().min(a_aaaa_ttl);
                                 let mut new_answer = RecordSet::new(answer.name(), query_type, ttl);
 
-                                for rdata in rdatas.into_iter().flatten() {
-                                    new_answer.add_rdata(rdata);
+                                for rdata in rdatas.iter() {
+                                    for rdata in rdata {
+                                        new_answer.add_rdata_ref(rdata);
+                                    }
                                 }
 
                                 // if DNSSEC is enabled, and the request had the DO set, sign the recordset

@@ -244,6 +244,14 @@ impl RecordSet {
         self.insert(record, 0)
     }
 
+    /// add data
+    #[inline(never)]
+    pub fn add_rdata_ref(&mut self, rdata: &RData) {
+        let mut record = Record::with(self.name.clone(), self.record_type, self.ttl);
+        record.set_data_ref(Some(rdata));
+        self.insert_ref(&record, 0);
+    }
+
     /// Inserts a new Resource Record into the Set.
     ///
     /// If the record is inserted, the ttl for the most recent record will be used for the ttl of
@@ -379,6 +387,84 @@ impl RecordSet {
             self.ttl = record.ttl();
             self.updated(serial);
             self.records.push(record);
+            true
+        } else {
+            replaced
+        }
+    }
+
+    /// Insert
+    #[inline(never)]
+    pub fn insert_ref(&mut self, record: &Record, serial: u32) -> bool {
+        assert_eq!(record.name(), &self.name);
+        assert_eq!(record.record_type(), self.record_type);
+
+        match record.record_type() {
+            RecordType::SOA => {
+                assert!(self.records.len() <= 1);
+
+                if let Some(soa_record) = self.records.first() {
+                    match soa_record.data() {
+                        Some(RData::SOA(ref existing_soa)) => {
+                            if let Some(RData::SOA(ref new_soa)) = record.data() {
+                                if new_soa.serial() <= existing_soa.serial() {
+                                    return false;
+                                }
+                            } else {
+                                return false;
+                            }
+                        }
+                        rdata => {
+                            return false;
+                        }
+                    }
+                }
+
+                // if we got here, we're updating...
+                self.records.clear();
+            }
+            RecordType::CNAME | RecordType::ANAME => {
+                assert!(self.records.len() <= 1);
+                self.records.clear();
+            }
+            _ => (),
+        }
+
+        // collect any records to update based on rdata
+        let to_replace: Vec<usize> = self
+            .records
+            .iter()
+            .enumerate()
+            .filter(|&(_, rr)| rr.data() == record.data())
+            .map(|(i, _)| i)
+            .collect::<Vec<usize>>();
+
+        // if the Records are identical, ignore the update, update all that are not (ttl, etc.)
+        self.replace_ref(record, serial, &to_replace)
+    }
+
+    /// Replace
+    #[inline(never)]
+    pub fn replace_ref(&mut self, record: &Record, serial: u32, to_replace: &Vec<usize>) -> bool {
+        let mut replaced = false;
+        for i in to_replace {
+            let i = *i;
+            if self.records[i] == *record {
+                return false;
+            }
+
+            // TODO: this shouldn't really need a clone since there should only be one...
+            self.records.push(record.clone());
+            self.records.swap_remove(i);
+            self.ttl = record.ttl();
+            self.updated(serial);
+            replaced = true;
+        }
+
+        if !replaced {
+            self.ttl = record.ttl();
+            self.updated(serial);
+            self.records.push(record.clone());
             true
         } else {
             replaced
