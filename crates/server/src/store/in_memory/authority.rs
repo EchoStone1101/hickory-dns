@@ -34,7 +34,7 @@ use crate::{
 
 use crate::{
     authority::{
-        AnyRecords, AuthLookup, Authority, LookupError, LookupOptions, LookupRecords, LookupResult,
+        AnyRecords, AuthLookup, Authority, LookupError, LookupOptions, LookupRecords, LookupResult, LookupErrorResponseCode,
         MessageRequest, UpdateResult, ZoneType,
     },
     proto::{
@@ -464,7 +464,7 @@ impl InnerInMemory {
     }
 
     #[inline(never)]
-    fn add_rdata(new_answer: &mut RecordSet, records: RrsetRecords) {
+    fn add_rdata(new_answer: &mut RecordSet, records: RrsetRecords<'_>) {
         for record in records {
             if let Some(rdata) = record.data() {
                 new_answer.add_rdata_ref(rdata);
@@ -1169,7 +1169,7 @@ impl Authority for InMemoryAuthority {
         //   generally return NoError and no results when other types exist at the same name. bah.
         // TODO: can we get rid of this?
         let result = match result {
-            Err(LookupError::ResponseCode(ResponseCode::NXDomain)) => {
+            Err(LookupError::ResponseCode(LookupErrorResponseCode(_, _, ResponseCode::NXDomain))) => {
                 if inner
                     .records
                     .keys()

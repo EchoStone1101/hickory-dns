@@ -14,6 +14,10 @@ use crate::proto::op::ResponseCode;
 #[cfg(feature = "hickory-resolver")]
 use crate::resolver::error::ResolveError;
 
+#[repr(C)]
+#[derive(Debug)]
+pub struct LookupErrorResponseCode(pub [u64; 2], pub [u8; 2], pub ResponseCode);
+
 // TODO: should this implement Failure?
 #[allow(clippy::large_enum_variant)]
 /// A query could not be fulfilled
@@ -24,8 +28,8 @@ pub enum LookupError {
     #[error("The name exists, but not for the record requested")]
     NameExists,
     /// There was an error performing the lookup
-    #[error("Error performing lookup: {0}")]
-    ResponseCode(ResponseCode),
+    #[error("Error performing lookup")]
+    ResponseCode(LookupErrorResponseCode),
     /// Resolve Error
     #[cfg(feature = "hickory-resolver")]
     #[cfg_attr(docsrs, doc(cfg(feature = "resolver")))]
@@ -49,12 +53,12 @@ impl LookupError {
 
     /// This is a non-existent domain name
     pub fn is_nx_domain(&self) -> bool {
-        matches!(*self, Self::ResponseCode(ResponseCode::NXDomain))
+        matches!(*self, Self::ResponseCode(LookupErrorResponseCode(_, _, ResponseCode::NXDomain)))
     }
 
     /// This is a non-existent domain name
     pub fn is_refused(&self) -> bool {
-        matches!(*self, Self::ResponseCode(ResponseCode::Refused))
+        matches!(*self, Self::ResponseCode(LookupErrorResponseCode(_, _, ResponseCode::Refused)))
     }
 }
 
@@ -62,7 +66,7 @@ impl From<ResponseCode> for LookupError {
     fn from(code: ResponseCode) -> Self {
         // this should never be a NoError
         debug_assert!(code != ResponseCode::NoError);
-        Self::ResponseCode(code)
+        Self::ResponseCode(LookupErrorResponseCode([0, 0], [0, 0], code))
     }
 }
 

@@ -414,7 +414,7 @@ impl RecordSet {
                                 return false;
                             }
                         }
-                        rdata => {
+                        _rdata => {
                             return false;
                         }
                     }

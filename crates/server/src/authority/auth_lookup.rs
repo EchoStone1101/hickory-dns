@@ -294,7 +294,7 @@ pub enum LookupRecords {
         /// LookupOptions for the request, e.g. dnssec and supported algorithms
         lookup_options: LookupOptions,
         /// the records found based on the query
-        records: Arc<RecordSet>,
+        records: Vec<Arc<RecordSet>>,
     },
     /// Vec of disjoint record sets
     ManyRecords(LookupOptions, Vec<Arc<RecordSet>>),
@@ -308,7 +308,7 @@ impl LookupRecords {
     pub fn new(lookup_options: LookupOptions, records: Arc<RecordSet>) -> Self {
         Self::Records {
             lookup_options,
-            records,
+            records: vec![records],
         }
     }
 
@@ -350,7 +350,7 @@ impl<'a> IntoIterator for &'a LookupRecords {
                 lookup_options,
                 records,
             } => LookupRecordsIter::RecordsIter(
-                lookup_options.rrset_with_supported_algorithms(records),
+                lookup_options.rrset_with_supported_algorithms(&records[0]),
             ),
             LookupRecords::ManyRecords(lookup_options, r) => LookupRecordsIter::ManyRecordsIter(
                 r.iter()

@@ -20,7 +20,7 @@ use crate::proto::rr::{
 };
 use crate::{
     authority::{
-        AuthLookup, AuthorityObject, EmptyLookup, LookupError, LookupObject, LookupOptions,
+        AuthLookup, AuthorityObject, EmptyLookup, LookupError, LookupObject, LookupOptions, LookupErrorResponseCode,
         MessageResponse, MessageResponseBuilder, ZoneType,
     },
     proto::op::{Edns, Header, LowerQuery, MessageType, OpCode, ResponseCode},
@@ -588,7 +588,7 @@ async fn send_authoritative_response(
         }
         // This request was refused
         // TODO: there are probably other error cases that should just drop through (FormErr, ServFail)
-        Err(LookupError::ResponseCode(ResponseCode::Refused)) => {
+        Err(LookupError::ResponseCode(LookupErrorResponseCode(_, _, ResponseCode::Refused))) => {
             response_header.set_response_code(ResponseCode::Refused);
             return LookupSections {
                 answers: Box::<AuthLookup>::default(),
