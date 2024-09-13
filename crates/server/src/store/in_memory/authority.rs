@@ -523,7 +523,7 @@ impl InnerInMemory {
 
                 let additional = self.inner_lookup(&search, *query_type, lookup_options);
                 // names.insert(search);
-                names.push(original_name.clone());
+                names.push(search.clone());
 
                 if let Some(additional) = additional {
                     // assuming no crazy long chains...
