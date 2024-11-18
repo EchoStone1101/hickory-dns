@@ -32,7 +32,7 @@ pub struct Name {
     label_data: Vec<u8>,
     // This 24 is chosen because TinyVec accommodates an inline buffer up to 24 bytes without
     // increasing its stack footprint
-    label_ends: Vec<u8>,
+    pub label_ends: Vec<u8>,
 }
 
 impl Name {

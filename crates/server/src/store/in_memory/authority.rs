@@ -544,7 +544,9 @@ impl InnerInMemory {
             }
         }
 
+        println!("origin_type={}", original_query_type);
         if !additionals.is_empty() {
+            println!("{:?}", additionals);
             Some(additionals)
         } else {
             None
@@ -1197,6 +1199,8 @@ impl Authority for InMemoryAuthority {
 
         let lookup_name = request_info.query.name();
         let record_type: RecordType = request_info.query.query_type();
+
+        println!("record_type={}", record_type);
 
         // if this is an AXFR zone transfer, verify that this is either the Secondary or Primary
         //  for AXFR the first and last record must be the SOA

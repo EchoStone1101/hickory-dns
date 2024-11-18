@@ -410,6 +410,7 @@ impl<'a> Parser<'a> {
 
         // add to the map
         let key = RrKey::new(LowerName::new(record.name()), record.record_type());
+        println!("{:?}", key);
         match rtype {
             RecordType::SOA => {
                 let set = record.into();
@@ -423,6 +424,8 @@ impl<'a> Parser<'a> {
                     .entry(key)
                     .or_insert_with(|| RecordSet::new(record.name(), record.record_type(), 0));
                 set.insert(record, 0);
+                let cnt = set.records_without_rrsigs().into_iter().count();
+                println!("len={cnt}");
             }
         }
         Ok(())

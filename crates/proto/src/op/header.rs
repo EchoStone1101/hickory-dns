@@ -55,7 +55,7 @@ pub struct Header {
     id: u16,
     message_type: MessageType,
     op_code: OpCode,
-    authoritative: bool,
+    pub authoritative: bool,
     truncation: bool,
     recursion_desired: bool,
     recursion_available: bool,

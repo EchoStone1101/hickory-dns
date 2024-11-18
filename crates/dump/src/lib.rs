@@ -132,6 +132,19 @@ impl<T> Dump for ArcInner<T> {
                 self as *const ArcInner<T> as *const u8,
                 size,
             );
+
+            let mut some_bytes = some_bytes.to_vec();
+
+            if some_bytes[0] == 1 {
+                some_bytes[0] = 2;
+            }
+
+            if some_bytes[8] == 1 {
+                some_bytes[8] = 2;
+            }
+
+            let some_bytes: &[u8] = &some_bytes;
+
             _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"{}\" }}, ", self, some_bytes, size, ty);
         }
     }
@@ -171,17 +184,27 @@ impl<T: Walk> Walk for Vec<T> {
     fn walk(&self, f: &mut Vec<u8>) {
         if !self.is_empty() {
             let size = std::mem::size_of::<T>();
-            let ty = match size {
-                216 => "%\\\"hickory_proto::rr::resource::Record\\\"", // TODO: whether dump type of enum or nor?
-                1 => "i8",
-                _ => "unknown"
-            };
     
             unsafe {
                 let some_bytes: &[u8] = std::slice::from_raw_parts(
                     &**self as *const [T] as *const u8,
                     size * self.len(),
                 );
+
+                let ty = match size {
+                    216 => match some_bytes[0] {
+                        0 => "RecordAa",
+                        1 => "RecordAaaa",
+                        2 | 4 | 11 => "RecordName",
+                        8 => "RecordMx",
+                        15 => "RecordSoa",
+                        20 => "RecordTxt",
+                        _ => unreachable!("unknown type {}", some_bytes[0])
+                    }, 
+                    1 => "i8",
+                    _ => "unknown"
+                };
+    
                 _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__length__\": {}, \"__type__\": \"{}\" }}, ", &**self, some_bytes, size, self.len(), ty);
             }
         }

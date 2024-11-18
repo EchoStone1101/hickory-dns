@@ -349,7 +349,10 @@ impl Catalog {
     ) -> ResponseInfo {
         let request_info = request.request_info();
         let authority = self.find(request_info.query.name());
-
+        for (k, v) in self.authorities.iter() {
+            println!("k={}, {}", k, k.is_fqdn());
+            println!("v={}, {}", v.origin(), v.origin().is_fqdn());
+        }
         if let Some(authority) = authority {
             lookup(
                 request_info,
@@ -419,14 +422,8 @@ async fn lookup<'a, R: ResponseHandler + Unpin>(
     request.dump(&mut f);
     request.walk(&mut f);
 
-    response_handle.dump(&mut f);
-    response_handle.walk(&mut f);
-
     request_info.dump(&mut f);
     request_info.walk(&mut f);
-
-    response_edns.as_ref().map(|e| e.dump(&mut f));
-    response_edns.walk(&mut f);
 
     while let Some(ch) = f.pop() {
         if ch == b',' {
@@ -436,7 +433,7 @@ async fn lookup<'a, R: ResponseHandler + Unpin>(
     }
 
     let json = std::str::from_utf8(&f).unwrap().to_string();
-    let mut outfile = std::fs::File::create("dump.json").unwrap();
+    let mut outfile = std::fs::File::create("ctx.json").unwrap();
     outfile.write_all(json.as_bytes()).unwrap();
 
     let query = request_info.query;
@@ -507,6 +504,7 @@ async fn build_response(
     query: &LowerQuery,
     edns: Option<&Edns>,
 ) -> (Header, LookupSections) {
+    println!("{}, {}, {:?}", query.name(), query.name().is_fqdn(), query.name().labels());
     let lookup_options = lookup_options_for_edns(edns);
 
     // log algorithms being requested
@@ -640,6 +638,12 @@ async fn send_authoritative_response(
         ),
     };
 
+    let c = additionals.iter().count();
+    println!("additional={}, response_code={}", c, response_header.response_code());
+    if let Some(a) = additionals.iter().next() {
+        println!("{:?}", a);
+    }
+
     LookupSections {
         answers,
         ns: ns.unwrap_or_else(|| Box::<AuthLookup>::default()),
@@ -713,3 +717,30 @@ struct LookupSections {
 //         // }
 //     }
 // }
+
+//   0                                                       32          336           352                                                                                                                           624        632  640                                                          696
+// { %"core::option::Option<hickory_proto::op::edns::Edns>", [38 x i64], { ptr, ptr }, %"hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>", [1 x i64], ptr, %"hickory_server::server::request_handler::RequestInfo<'_>", [1 x i8], i8, [1006 x i8] }
+//  
+//   0          32                                                      64                                                                                                                            336         696           704
+// { [4 x i64], %"core::option::Option<hickory_proto::op::edns::Edns>", %"hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>", [360 x i8], i8, [7 x i8], %"[async fn body@hickory_server::authority::catalog::send_response<'_, hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>>::{closure#0}]", %"hickory_server::authority::catalog::LookupSections" }
+// { [4 x i64], %"core::option::Option<hickory_proto::op::edns::Edns>", %"hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>", [36 x i64], ptr, [9 x i64], %"[async fn body@hickory_server::authority::catalog::build_response::{closure#0}]" }
+//   0          32                                                      64                                                                                                                            336         624  632        704
+// 
+//     0    8      16   24         32   40   48                                                           104  106        132 133
+// { { ptr, ptr }, ptr, [1 x i64], ptr, ptr, %"hickory_server::server::request_handler::RequestInfo<'_>", i16, [26 x i8], i8, [147 x i8] }
+// 
+//   0          24   32          106  108                                   130 131 132       136
+// { [3 x i64], ptr, [37 x i16], i16, %"hickory_proto::op::header::Header", i8, i8, [4 x i8], %"[async fn body@hickory_server::authority::catalog::send_authoritative_response<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<alloc::boxed::Box<dyn hickory_server::authority::authority_object::LookupObject>, hickory_server::authority::error::LookupError>> + core::marker::Send>>>::{closure#0}]" }
+// { [3 x i64], ptr, [37 x i16], i16, %"hickory_proto::op::header::Header", i8, i8, [4 x i8], %"[async fn body@hickory_server::authority::catalog::send_forwarded_response<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<alloc::boxed::Box<dyn hickory_server::authority::authority_object::LookupObject>, hickory_server::authority::error::LookupError>> + core::marker::Send>>>::{closure#0}]" }
+// 
+// { [4 x i64], { ptr, ptr }, { ptr, ptr }, [2 x i64], ptr, ptr, i16, [5 x i8], i8, i8, [39 x i8] }
+//
+// %"core::option::Option<hickory_server::authority::auth_lookup::LookupRecords>" = type { [40 x i16], i16, [3 x i16] }
+//
+//                                                                                          0          56   64                                                           120
+// %"[async block@crates/server/src/store/in_memory/authority.rs:1178:44: 1228:6]" = type { [7 x i64], ptr, %"hickory_server::server::request_handler::RequestInfo<'_>", [4 x i8], i8, i8, [794 x i8] }
+// %"[async block@crates/server/src/store/in_memory/authority.rs:1178:44: 1228:6]::Suspend2" = type { %"hickory_server::server::request_handler::RequestInfo<'_>", [32 x i16], { i16, i16 }, [2 x i16], { ptr, ptr } }
+// %"[async block@crates/server/src/store/in_memory/authority.rs:1178:44: 1228:6]::Suspend1" = type { %"hickory_server::server::request_handler::RequestInfo<'_>", [32 x i16], { i16, i16 }, [2 x i16], %"futures_util::future::try_future::MapOk<futures_util::future::try_join::TryJoin3<core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<authority::auth_lookup::AuthLookup, authority::error::LookupError>> + core::marker::Send>>, core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<authority::auth_lookup::AuthLookup, authority::error::LookupError>> + core::marker::Send>>, core::pin::Pin<alloc::boxed::Box<dyn core::future::future::Future<Output = core::result::Result<authority::auth_lookup::AuthLookup, authority::error::LookupError>> + core::marker::Send>>>, [closure@crates/server/src/store/in_memory/authority.rs:1214:25: 1214:56]>" }
+//                                                                                                    0                                                            56          120           124        128
+// { %"core::option::Option<hickory_proto::op::edns::Edns>", [40 x i64], %"hickory_server::server::server_future::ReportingResponseHandler<hickory_server::server::response_handler::ResponseHandle>", [19 x i64], %"hickory_server::authority::message_response::MessageResponse<'_, '_, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>, alloc::boxed::Box<dyn core::iter::traits::iterator::Iterator<Item = &hickory_proto::rr::resource::Record> + core::marker::Send>>", [2 x i8], i8, [5 x i8] }
+//   0                                                       32          352

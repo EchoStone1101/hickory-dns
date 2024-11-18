@@ -28,6 +28,11 @@ use crate::serialize::binary::*;
 pub struct LowerName(Name);
 
 impl LowerName {
+    /// Label
+    pub fn labels(&self) -> &Vec<u8> {
+        &self.0.label_ends
+    }
+
     /// Create a new domain::LowerName, i.e. label
     pub fn new(name: &Name) -> Self {
         Self(name.to_lowercase())

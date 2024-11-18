@@ -362,10 +362,13 @@ impl RecordSet {
             .map(|(i, _)| i)
             .collect::<Vec<usize>>();
 
+        println!("{:?}", to_replace);
+
         // if the Records are identical, ignore the update, update all that are not (ttl, etc.)
         let mut replaced = false;
         for i in to_replace {
             if self.records[i] == record {
+                println!("actual_len={}, return", self.records.len());
                 return false;
             }
 
@@ -381,8 +384,10 @@ impl RecordSet {
             self.ttl = record.ttl();
             self.updated(serial);
             self.records.push(record);
+            println!("actual_len={}", self.records.len());
             true
         } else {
+            println!("actual_len={}", self.records.len());
             replaced
         }
     }

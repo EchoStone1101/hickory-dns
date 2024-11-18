@@ -107,6 +107,7 @@ impl LookupObject for AuthLookup {
 
     fn take_additionals(&mut self) -> Option<Box<dyn LookupObject>> {
         let additionals = Self::take_additionals(self);
+        println!("{:?}", additionals);
         additionals.map(|a| Box::new(a) as Box<dyn LookupObject>)
     }
 }

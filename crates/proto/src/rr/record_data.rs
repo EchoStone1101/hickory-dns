@@ -12,7 +12,7 @@
 use std::convert::From;
 use std::{cmp::Ordering, fmt, net::IpAddr};
 
-use dump::Walk;
+use dump::{Walk, Dump};
 #[cfg(feature = "serde-config")]
 use serde::{Deserialize, Serialize};
 
@@ -695,6 +695,30 @@ pub enum RData {
     /// This corresponds to a record type of 0, unspecified
     #[deprecated(note = "Use None for the RData in the resource record instead")]
     ZERO,
+}
+
+impl Dump for RData {
+    fn dump(&self, f: &mut Vec<u8>) {
+        use std::io::Write;
+
+        let name = match self {
+            RData::A(_) => "RecordAa",
+            RData::AAAA(_) => "RecordAaaa",
+            RData::ANAME(_) | RData::CNAME(_) | RData::NS(_) => "RecordName",
+            RData::MX(_) => "RecordMx",
+            RData::SOA(_) => "RecordSoa",
+            _ => unreachable!()
+        };
+
+        let size = std::mem::size_of::<RData>();
+        unsafe {
+            let some_bytes: &[u8] = std::slice::from_raw_parts(
+                self as *const RData as *const u8,
+                size,
+            );
+            _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__type__\": \"{}\" }}, ", self, some_bytes, size, name);
+        }
+    }
 }
 
 impl Walk for RData {
