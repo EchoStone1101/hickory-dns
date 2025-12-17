@@ -191,6 +191,8 @@ impl<T: Walk> Walk for Vec<T> {
                     size * self.len(),
                 );
 
+                let mut is_txt = false;
+
                 let ty = match size {
                     216 => match some_bytes[0] {
                         0 => "RecordAa",
@@ -198,12 +200,25 @@ impl<T: Walk> Walk for Vec<T> {
                         2 | 4 | 11 => "RecordName",
                         8 => "RecordMx",
                         15 => "RecordSoa",
-                        20 => "RecordTxt",
+                        16 => "RecordSrv",
+                        20 => {
+                            is_txt = true;
+                            "RecordTxt"
+                        },
                         _ => unreachable!("unknown type {}", some_bytes[0])
                     }, 
                     1 => "i8",
                     _ => "unknown"
                 };
+
+                let mut some_bytes = some_bytes.to_vec();
+                if is_txt {
+                    for i in 8..24 {
+                        some_bytes[i] = 0;
+                    }
+                }
+
+                let some_bytes: &[u8] = &some_bytes;
     
                 _ = write!(f, "\"{:p}\": {{ \"data\": {:?}, \"__size__\": {}, \"__length__\": {}, \"__type__\": \"{}\" }}, ", &**self, some_bytes, size, self.len(), ty);
             }
