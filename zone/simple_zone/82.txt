@@ -1,0 +1,5 @@
+a.a.a.			      500 IN SOA	b.c.d. e.f.d. 3 604800 86400 2419200 604800
+a.a.a.			      500 IN NS		b.c.d.
+f.a.a.a.		      500 IN A		2.2.2.2
+f.a.a.a.		      500 IN DNAME	g.
+h.a.a.a.			      500 IN A		1.1.1.1

@@ -1,0 +1,10 @@
+d.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+d.		500 IN NS	d.
+a.d.		500 IN TXT	"This is a sample text."
+d.		500 IN TXT	"This is a sample text."
+d.		500 IN SRV	10 50 7890 d.d.
+d.		500 IN SRV	10 50 7890 .
+d.		500 IN A	247.199.186.124
+d.		500 IN MX	10 e.i.
+d.		500 IN NS	a.h.
+*.d.		500 IN MX	10 g.d.

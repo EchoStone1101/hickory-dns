@@ -1,0 +1,5 @@
+a.b.				      500 IN SOA	c.d.e. f.a.e. 3 604800 86400 2419200 604800
+a.b.				      500 IN NS		c.d.e.
+g.a.b.			      500 IN A		1.1.1.1
+a.g.a.b.		      500 IN NS		h.g.i.b.
+a.g.a.b.		      500 IN NS		a.g.i.b.

@@ -1,0 +1,10 @@
+f.d.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+f.d.		500 IN NS	j.i.d.d.
+*.f.d.		500 IN MX	10 f.d.
+a.f.d.		500 IN TXT	"This is a sample text."
+f.d.		500 IN A	253.20.183.221
+i.f.d.		500 IN A	250.28.241.48
+i.f.d.		500 IN A	47.8.248.180
+j.f.d.		500 IN TXT	"This is a sample text."
+f.d.		500 IN A	246.74.13.4
+f.d.		500 IN AAAA	8:2:7:8:2:3:4:5

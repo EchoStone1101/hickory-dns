@@ -1,0 +1,11 @@
+g.d.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+g.d.		500 IN NS	g.g.d.
+b.c.g.d.		500 IN CNAME	g.d.
+g.h.g.d.		500 IN CNAME	g.d.
+d.*.g.d.		500 IN AAAA	5:2:6:4:4:7:5:8
+g.d.		500 IN TXT	"This is a sample text."
+e.g.d.		500 IN DNAME	g.d.
+f.h.g.d.		500 IN NS	c.e.g.d.
+g.g.d.		500 IN DNAME	j.c.g.d.
+*.g.d.		500 IN AAAA	8:4:7:6:4:6:1:6
+g.g.d.		500 IN A	98.87.133.213

@@ -1,0 +1,5 @@
+a.				      500 IN SOA	b.c.d. e.f.d. 3 604800 86400 2419200 604800
+a.				      500 IN NS		b.c.d.
+a.				      500 IN AAAA	2400:cb00:2049:1::a29f:1804
+g.a.			      500 IN NS		h.
+g.a.			      500 IN NS		a.

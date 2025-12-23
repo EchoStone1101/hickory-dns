@@ -1,0 +1,4 @@
+a.b.c.			      500 IN SOA	d.e.f. g.h.f. 3 604800 86400 2419200 604800
+a.b.c.			      500 IN NS		d.e.f.
+*.a.b.c.			      500 IN CNAME	*.c.i.c.
+b.a.b.c.			      500 IN NS		c.

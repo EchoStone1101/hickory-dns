@@ -1,0 +1,11 @@
+b.i.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+b.i.		500 IN NS	b.i.
+j.b.i.		500 IN DNAME	b.i.
+i.d.b.i.		500 IN NS	b.b.i.
+g.b.i.		500 IN A	13.212.180.216
+j.d.b.i.		500 IN AAAA	2:8:6:5:3:4:1:4
+*.b.i.		500 IN AAAA	1:4:9:3:7:2:2:2
+b.i.		500 IN SRV	10 50 7890 c.h.b.i.
+i.b.i.		500 IN DNAME	b.i.
+d.b.i.		500 IN CNAME	b.i.
+b.i.		500 IN A	55.219.201.30

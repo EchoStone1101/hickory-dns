@@ -1,9 +1,10 @@
 #!/bin/bash
 
-mkdir simple -p
-mkdir simple_filter -p
+base_dir="$1"
+mkdir "$base_dir" -p
+mkdir "${base_dir}_filter" -p
 
-for file in ZoneFiles/*.txt; do
+for file in "${base_dir}_zone"/*.txt; do
     if grep -qE "DNAME" "$file"; then
         echo "${file} skipped"
         continue
@@ -20,20 +21,20 @@ file = \"${filename}.txt\""
 
     echo "$zonefile" > zone.toml
     
-    ../target/release/hickory-dns -c ./zone.toml -z ./ZoneFiles/ -p 24141 > /dev/null &
+    ../target/release/hickory-dns -c ./zone.toml -z "./${base_dir}_zone/" -p 24141 > /dev/null &
     sleep 0.2
     
     dig @127.0.0.1 -p 24141 ${domain} SOA > /dev/null &
     sleep 0.2
     
-    mkdir "simple/${filename}" -p
+    mkdir "$base_dir/${filename}" -p
     
     if ! grep -qE "CNAME|DNAME" "$file"; then
-        mkdir "simple_filter/${filename}" -p
-        cp ctx.json "./simple_filter/${filename}/ctx.json" 
+        mkdir "${base_dir}_filter/${filename}" -p
+        cp ctx.json "./${base_dir}_filter/${filename}/ctx.json" 
     fi
 
-    mv ctx.json "./simple/${filename}/ctx.json"
+    mv ctx.json "./$base_dir/${filename}/ctx.json"
     echo "${file} complete"
     
     pkill hickory-dns

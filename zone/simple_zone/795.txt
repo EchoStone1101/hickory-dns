@@ -1,0 +1,4 @@
+a.b.c.				      500 IN SOA	d.e.f. g.h.f. 3 604800 86400 2419200 604800
+a.b.c.				      500 IN NS		b.a.
+h.a.b.c.			      500 IN NS		h.a.i.c.
+h.a.b.c.			      500 IN NS		a.b.j.

@@ -1,0 +1,5 @@
+a.b.c.			      500 IN SOA	d.e.f. g.h.f. 3 604800 86400 2419200 604800
+a.b.c.			      500 IN NS		d.e.f.
+a.a.b.c.		      500 IN DNAME	i.a.j.c.
+k.a.b.c.		      500 IN NS		i.h.l.c.
+m.a.b.c.		      500 IN DNAME	i.n.b.c.

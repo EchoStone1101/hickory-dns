@@ -1,0 +1,5 @@
+a.				      500 IN SOA	b.c.d. e.f.d. 3 604800 86400 2419200 604800
+a.				      500 IN NS		b.c.d.
+*.a.				      500 IN A		1.1.1.1
+*.a.				      500 IN TXT	"This_is_a_sample_text"
+g.a.				      500 IN CNAME	h.i.g.a.

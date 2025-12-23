@@ -1,0 +1,5 @@
+a.b.				      500 IN SOA	c.d.e. f.a.e. 3 604800 86400 2419200 604800
+a.b.				      500 IN NS		c.d.e.
+g.a.b.				      500 IN NS		b.
+g.a.b.				      500 IN NS		g.h.b.
+i.g.a.b.			      500 IN DNAME	h.h.b.

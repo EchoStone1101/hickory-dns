@@ -1,0 +1,10 @@
+h.e.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+h.e.		500 IN NS	i.b.d.i.
+g.*.h.e.		500 IN AAAA	8:3:1:6:4:7:6:9
+h.h.e.		500 IN A	62.217.68.184
+h.e.		500 IN A	157.24.252.123
+h.e.		500 IN A	212.91.202.150
+i.i.h.e.		500 IN TXT	"This is a sample text."
+h.e.		500 IN AAAA	8:1:4:6:1:9:7:8
+h.e.		500 IN A	243.187.223.80
+h.e.h.e.		500 IN AAAA	3:6:6:9:2:7:5:3

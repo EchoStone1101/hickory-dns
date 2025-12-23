@@ -1,0 +1,5 @@
+a.				      500 IN SOA	b.c.d. e.f.d. 3 604800 86400 2419200 604800
+a.				      500 IN NS		b.c.d.
+a.a.			      500 IN CNAME	g.h.h.a.
+h.a.a.			      500 IN CNAME	h.h.a.
+g.h.a.a.		      500 IN DNAME	g.h.a.a.

@@ -1,0 +1,12 @@
+i.b.		500 IN SOA	mname.com. rname.com. 3 604800 86400 2419200 604800
+i.b.		500 IN NS	e.i.b.
+f.h.i.b.		500 IN TXT	"This is a sample text."
+i.b.		500 IN MX	10 b.a.i.b.
+i.b.		500 IN NS	a.i.b.
+c.d.i.b.		500 IN A	98.2.217.225
+c.*.i.b.		500 IN NS	i.a.i.b.
+j.f.i.b.		500 IN MX	10 i.b.
+i.b.		500 IN A	244.195.146.41
+g.i.b.		500 IN AAAA	7:7:2:5:7:3:1:1
+e.i.b.		500 IN A	197.80.123.46
+a.i.b.		500 IN A	180.133.124.247
